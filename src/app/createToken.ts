@@ -51,6 +51,8 @@ export class CreateToken implements OnInit, OnDestroy {
   blackholeRegularKeySet:boolean = false;
   blackholeMasterDisabled:boolean = false;
 
+  checkBoxNftInformation:boolean = false;
+
   checkBoxAccountsPreselected:boolean = false;
 
   issuer_account_info:any;
@@ -263,10 +265,10 @@ export class CreateToken implements OnInit, OnDestroy {
         txjson: {
           Account: this.issuerAccount,
           TransactionType: "Payment",
-          Memos : [{Memo: {MemoType: Buffer.from("[https://xumm.community]-Memo", 'utf8').toString('hex').toUpperCase(), MemoData: Buffer.from("Payment for creating Token via xApp: '"+this.currencyCode.trim()+"'", 'utf8').toString('hex').toUpperCase()}}]
+          Memos : [{Memo: {MemoType: Buffer.from("[https://xumm.community]-Memo", 'utf8').toString('hex').toUpperCase(), MemoData: Buffer.from("Payment for creating NFT via xApp: '"+this.currencyCode.trim()+"'", 'utf8').toString('hex').toUpperCase()}}]
         },
         custom_meta: {
-          instruction: "Please pay with the account you want to issue your Token from! (Issuer Account)",
+          instruction: "Please pay with the account you want to issue your NFT from! (Issuer Account)",
         }
       }
     }
@@ -310,7 +312,7 @@ export class CreateToken implements OnInit, OnDestroy {
               TransactionType: "SignIn"
           },
           custom_meta: {
-            instruction: "Please choose the account which should create the token. This account is called 'Issuer account'.\n\nPlease sign the request to confirm.",
+            instruction: "Please choose the account which should create the NFT. This account is called 'Issuer account'.\n\nPlease sign the request to confirm.",
             blob: { source: "Issuer"}
           }
       }
@@ -422,7 +424,7 @@ export class CreateToken implements OnInit, OnDestroy {
               TransactionType: "SignIn"
           },
           custom_meta: {
-            instruction: "Please choose the account which should receive your token. This account is called 'Recipient account'.\n\nPlease sign the request to confirm.",
+            instruction: "Please choose the account which should receive your NFT. This account is called 'Recipient account'.\n\nPlease sign the request to confirm.",
             blob: { source: "Recipient"}
           }
       }
@@ -528,10 +530,7 @@ export class CreateToken implements OnInit, OnDestroy {
   }
 
   checkChangesLimit() {
-    this.validLimit = this.limit && this.limit > 0 && !(/[^.0-9]|\d*\.\d{16,}/.test(this.limit.toString()));
-
-    if(this.validLimit && this.limit.toString().includes('.') && this.limit.toString().substring(0,this.limit.toString().indexOf('.')).length > 40)
-      this.validLimit = false;
+    this.validLimit = this.limit && (/^\d{1,2}$/.test(this.limit.toString())) && this.limit > 0 && this.limit < 11;
   }
 
   async setTrustline() {
@@ -549,11 +548,11 @@ export class CreateToken implements OnInit, OnDestroy {
           LimitAmount: {
             currency: normalizer.getCurrencyCodeForXRPL(this.currencyCode),
             issuer: this.issuerAccount.trim(),
-            value: normalizer.tokenNormalizer(this.limit.toString())
+            value: this.getLimitInXRPL()
           }
         },
         custom_meta: {
-          instruction: "- Set TrustLine between Token recipient and issuer\n\n- Please sign with the RECIPIENT account!"
+          instruction: "- Set TrustLine between NFT recipient and issuer\n\n- Please sign with the RECIPIENT account!"
         }
       }
     }
@@ -601,7 +600,7 @@ export class CreateToken implements OnInit, OnDestroy {
           Amount: {
             currency: normalizer.getCurrencyCodeForXRPL(this.currencyCode),
             issuer: this.issuerAccount.trim(),
-            value: normalizer.tokenNormalizer(this.limit.toString())
+            value: this.getLimitInXRPL()
           }
         },
         custom_meta: {
@@ -634,6 +633,13 @@ export class CreateToken implements OnInit, OnDestroy {
     }
 
     this.loadingData = false;
+  }
+
+  getLimitInXRPL(): string {
+    if(this.limit != null && this.limit < 11 && this.limit > 0)
+      return normalizer.nftTokenNumberToXrplFormat(this.limit)
+    else
+      return normalizer.nftTokenNumberToXrplFormat(0)
   }
 
   async sendRemainingXRP() {

@@ -1,2 +1,2 @@
-# xumm-xapp-create-token
-XUMM xApp implementation for creating a token on the XRP Ledger
+# xumm-xapp-create-nft
+XUMM xApp implementation for creating a nft on the XRP Ledger

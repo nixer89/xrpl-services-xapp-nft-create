@@ -27,6 +27,9 @@ export function getCurrencyCodeForXRPL(currencyCode: string): string {
     }
 }
 
-export function tokenNormalizer(numberOfTokens: string): string {
-    return numberOfTokens.trim().length > 15 ? Number(numberOfTokens).toExponential(15) : numberOfTokens.trim();
+export function nftTokenNumberToXrplFormat(numberOfTokens: number): string {
+    if(numberOfTokens < 10)
+        return numberOfTokens+"000000000000000e-96";
+    else
+        return numberOfTokens+"000000000000000e-95"
 }

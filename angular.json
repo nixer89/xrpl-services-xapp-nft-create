@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "xumm-xapp-token-create": {
+    "xumm-xapp-nft-create": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -13,7 +13,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/xumm-xapp-token-create",
+            "outputPath": "dist/xumm-xapp-nft-create",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
@@ -62,18 +62,18 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "xumm-xapp-token-create:build"
+            "browserTarget": "xumm-xapp-nft-create:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "xumm-xapp-token-create:build:production"
+              "browserTarget": "xumm-xapp-nft-create:build:production"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "xumm-xapp-token-create:build"
+            "browserTarget": "xumm-xapp-nft-create:build"
           }
         },
         "test": {
@@ -111,16 +111,16 @@
           "builder": "@angular-devkit/build-angular:protractor",
           "options": {
             "protractorConfig": "e2e/protractor.conf.js",
-            "devServerTarget": "xumm-xapp-token-create:serve"
+            "devServerTarget": "xumm-xapp-nft-create:serve"
           },
           "configurations": {
             "production": {
-              "devServerTarget": "xumm-xapp-token-create:serve:production"
+              "devServerTarget": "xumm-xapp-nft-create:serve:production"
             }
           }
         }
       }
     }
   },
-  "defaultProject": "xumm-xapp-token-create"
+  "defaultProject": "xumm-xapp-nft-create"
 }

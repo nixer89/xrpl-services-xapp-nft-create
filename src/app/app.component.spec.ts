@@ -16,16 +16,16 @@ describe('AppComponent', () => {
     expect(app).toBeTruthy();
   });
 
-  it(`should have as title 'xumm-xapp-token-create'`, () => {
+  it(`should have as title 'xumm-xapp-nft-create'`, () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
-    expect(app.title).toEqual('xumm-xapp-token-create');
+    expect(app.title).toEqual('xumm-xapp-nft-create');
   });
 
   it('should render title', () => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
     const compiled = fixture.nativeElement;
-    expect(compiled.querySelector('.content span').textContent).toContain('xumm-xapp-token-create app is running!');
+    expect(compiled.querySelector('.content span').textContent).toContain('xumm-xapp-nft-create app is running!');
   });
 });
