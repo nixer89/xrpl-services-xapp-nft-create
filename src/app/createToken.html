@@ -168,8 +168,23 @@
               <mat-hint *ngIf="currencyCode && !validCurrencyCode && currencyCode.toUpperCase() === 'XRP'">You cannot issue any XRP!</mat-hint>
               <mat-hint *ngIf="currencyCode && !validCurrencyCode && currencyCode.length > 20">The currency code can have a maximum of 20 characters.</mat-hint>
               <mat-hint *ngIf="currencyCode && !validCurrencyCode && currencyCode.length >= 3 && currencyCode.length <=20 && currencyCode.toUpperCase() != 'XRP'">The currency code contains invalid characters.</mat-hint>
+              <mat-hint *ngIf="currencyCode && validCurrencyCode && currencyAlreadyIssued">You already created this token. It is not possible to create it again.</mat-hint>
             </mat-form-field>
-            <div *ngIf="currencyCode && validCurrencyCode && currencyCode.length > 3 && currencyCode.length < 21" fxLayout="column" fxLayoutGap="0.3em" style="margin-bottom: 1.5em;">
+
+            <div *ngIf="currencyCode && validCurrencyCode && currencyAlreadyIssued" fxLayout="column" fxLayoutGap="0.3em" style="margin-bottom: 1.5em;">
+              <mat-card class="mat-card-orange" fxLayout="column">
+                <label>Attention! You already created this currency. If you want to issue <b>more</b> of your token, please visit:</label>
+                <div fxLayout="row" fxLayoutGap="0.3em;" fxLayoutAlign="start center">
+                  <label class="break-words" (click)="copyTokenLink()">https://xumm.community/tokens</label>
+                  <button mat-icon-button aria-label="Copy Token Link" (click)="copyTokenLink()">
+                    <mat-icon style="font-size: 16px; width: fit-content; height: fit-content;">content_copy</mat-icon>
+                  </button>
+                </div>
+                <label>and find the "Issue more of your created Token" section!</label>
+              </mat-card>
+            </div>
+
+            <div *ngIf="currencyCode && validCurrencyCode && !currencyAlreadyIssued && currencyCode.length > 3 && currencyCode.length < 21" fxLayout="column" fxLayoutGap="0.3em" style="margin-bottom: 1.5em;">
               <mat-card class="mat-card-orange" fxLayout="column">
                 <label>Attention! Your currency code will be represented as HEX string on the XRP Ledger but most software does translate this into human readable characters as shown above! </label>
                 <label>HEX representation of your currency code: {{getCurrencyCodeForXRPL()}}</label>
@@ -179,17 +194,17 @@
             <label style="padding-top: 0.5em;" class="loading">How many NFT you want to create?</label>
             <mat-form-field>
               <input matInput name="Number of NFT" placeholder="Number of NFT" [(ngModel)]="limit" (ngModelChange)="checkChangesLimit()">
-              <mat-hint class="xumm-red" *ngIf="limit && !validLimit">Not a valid number. Please choose a number between 1 and 10!</mat-hint>
+              <mat-hint class="xumm-red" *ngIf="limit && !validLimit">Not a valid number. Please choose a number between 1 and 100!</mat-hint>
             </mat-form-field>
             <mat-card *ngIf="validLimit && limit > 1" class="mat-card-orange" fxLayout="column">
               <label>Information: A NFT (non fungible token) is usually only 1 single token and therefore NOT interchangeable. This is the purpose of a NFT. Issuing more than 1 NFT makes them interchangeable!</label>
-              <label>We will let you create up to 10 NFT of the same type (currency code) in case you have such a specific use case for your NFT.</label>
+              <label>We will let you create up to 100 NFT of the same type (currency code) in case you have such a specific use case for your NFT.</label>
               <label>BUT we highly recommend to issue only 1 NFT to be a truly non fungible token!</label>
             </mat-card>
           </form>
           
           <div fxLayoutGap="0.5em" style="padding-top: 0.5em">
-              <button mat-raised-button color="primary" (click)="moveNext()" [disabled]="!validCurrencyCode || !validLimit">Next</button>
+              <button mat-raised-button color="primary" (click)="moveNext()" [disabled]="!validCurrencyCode || !validLimit || currencyAlreadyIssued">Next</button>
               <button mat-raised-button class="xumm-grey-background"  (click)="moveBack()">Back</button>
           </div>
       </mat-card>
@@ -318,6 +333,12 @@
           <mat-card class="mat-card-orange" fxLayout="column">
             <label>We are going to issue: <b>{{this.limit}} {{this.currencyCode}}</b></label>
             <label>to: <b>{{recipient_account_info && recipient_account_info.Account}}</b></label>
+          </mat-card>
+          <mat-card>
+            <h4>NFT Creation Memo (optional):</h4>
+            <mat-form-field style="width: 95%;">
+                <input matInput type="text" [(ngModel)]="memoInput" placeholder="Memo" aria-label="NFT Creation Memo">
+            </mat-form-field>
           </mat-card>
           <mat-checkbox [(ngModel)]="checkBoxIssuingText" [ngClass]="(checkBoxIssuingText ? 'xumm-green': 'xumm-red')" [disabled]="loadingData || weHaveIssued">I have read and understand the above text. Let me create my NFT now!</mat-checkbox>
           <div fxLayoutAlign="start center">

@@ -66,6 +66,7 @@ export class CreateToken implements OnInit, OnDestroy {
   currencyCode:string;
   limit:number;
   validCurrencyCode:boolean = false;
+  currencyAlreadyIssued:boolean = false;
   validLimit:boolean = false;
 
   transactionSuccessfull: Subject<void> = new Subject<void>();
@@ -77,6 +78,8 @@ export class CreateToken implements OnInit, OnDestroy {
   needDefaultRipple:boolean = true;
   recipientTrustlineSet:boolean = false;
   weHaveIssued:boolean = false;
+
+  memoInput: string;
 
   @Input()
   ottChanged: Observable<any>;
@@ -99,6 +102,8 @@ export class CreateToken implements OnInit, OnDestroy {
 
   errorLabel:string = null;
 
+  alreadyIssuedCurrencies:string[] = [];
+
   title: string = "Xumm Community xApp";
   tw: TypeWriter
 
@@ -107,7 +112,7 @@ export class CreateToken implements OnInit, OnDestroy {
   async ngOnInit(): Promise<void> {
     this.ottReceived = this.ottChanged.subscribe(async ottData => {
       //this.infoLabel = "ott received: " + JSON.stringify(ottData);
-      //console.log("ottReceived: " + JSON.stringify(ottData));
+      //console.log("ottReceived: " + JSON.stringify(ottData));      
 
       if(ottData) {
 
@@ -121,7 +126,7 @@ export class CreateToken implements OnInit, OnDestroy {
 
           this.issuer_account_info = "no account";
           //await this.loadAccountDataIssuer(ottData.account);
-          //this.loadingData = false;
+          this.loadingData = false;
 
           //await this.loadAccountData(ottData.account); //false = ottResponse.node == 'TESTNET' 
         } else {
@@ -177,11 +182,14 @@ export class CreateToken implements OnInit, OnDestroy {
   }
 
   async handleOverlayEvent(event:any) {
-    let eventData = JSON.parse(event.data);
+    if(event && event.data) {
+      console.log(JSON.stringify(event.data));
+      let eventData = JSON.parse(JSON.stringify(event.data));
 
-    if(eventData && eventData.method == "payloadResolved" && eventData.reason == "DECLINED") {
-        //user closed without signing
-        this.loadingData = false;
+      if(eventData && eventData.method == "payloadResolved" && eventData.reason == "DECLINED") {
+          //user closed without signing
+          this.loadingData = false;
+      }
     }
   }
 
@@ -371,6 +379,33 @@ export class CreateToken implements OnInit, OnDestroy {
           this.needDefaultRipple = !flagUtil.isDefaultRippleEnabled(this.issuer_account_info.Flags)
           this.blackholeDisallowXrp = flagUtil.isDisallowXRPEnabled(this.issuer_account_info.Flags);
           this.blackholeMasterDisabled = flagUtil.isMasterKeyDisabled(this.issuer_account_info.Flags)
+
+          //if account exists, check for already issued currencies
+          let gateway_balances_request:any = {
+            command: "gateway_balances",
+            account: xrplAccount,
+            strict: true,
+            ledger_index: "validated"
+          }
+
+          let gateway_balances:any = await this.xrplWebSocket.getWebsocketMessage("token-create", gateway_balances_request, this.isTestMode);
+
+          if(gateway_balances && gateway_balances.status && gateway_balances.status === 'success' && gateway_balances.type && gateway_balances.type === 'response' && gateway_balances.result && gateway_balances.result.obligations) {
+            let obligations:any = gateway_balances.result.obligations;
+            
+            if(obligations) {
+                for (var currency in obligations) {
+                    if (obligations.hasOwnProperty(currency)) {
+                        this.alreadyIssuedCurrencies.push(currency);
+                    }
+                }
+            } else {
+              this.alreadyIssuedCurrencies = [];
+            }
+          } else {                
+            this.alreadyIssuedCurrencies = [];
+          }
+
         } else {
           this.issuer_account_info = message_acc_info;
         }
@@ -523,6 +558,7 @@ export class CreateToken implements OnInit, OnDestroy {
 
   checkChangesCurrencyCode() {
     this.validCurrencyCode = this.currencyCode && /^[a-zA-Z\d?!@#$%^&*<>(){}[\]|]{3,20}$/.test(this.currencyCode) && this.currencyCode.toUpperCase() != "XRP";
+    this.currencyAlreadyIssued = this.validCurrencyCode && this.alreadyIssuedCurrencies.includes(this.currencyCode.trim());
   }
 
   getCurrencyCodeForXRPL(): string {
@@ -530,34 +566,34 @@ export class CreateToken implements OnInit, OnDestroy {
   }
 
   checkChangesLimit() {
-    this.validLimit = this.limit && (/^\d{1,2}$/.test(this.limit.toString())) && this.limit > 0 && this.limit < 11;
+    this.validLimit = this.limit && (/^\d{1,3}$/.test(this.limit.toString())) && this.limit > 0 && this.limit < 101;
   }
 
   async setTrustline() {
     this.loadingData = true;
+    try {
 
-    let genericBackendRequest:GenericBackendPostRequest = {
-      options: {
-        xrplAccount: this.recipient_account_info.Account
-      },
-      payload: {
-        txjson: {
-          Account: this.recipient_account_info.Account,
-          TransactionType: "TrustSet",
-          Flags: 131072, //no ripple
-          LimitAmount: {
-            currency: normalizer.getCurrencyCodeForXRPL(this.currencyCode),
-            issuer: this.issuerAccount.trim(),
-            value: this.getLimitInXRPL()
-          }
+      let genericBackendRequest:GenericBackendPostRequest = {
+        options: {
+          xrplAccount: this.recipient_account_info.Account
         },
-        custom_meta: {
-          instruction: "- Set TrustLine between NFT recipient and issuer\n\n- Please sign with the RECIPIENT account!"
+        payload: {
+          txjson: {
+            Account: this.recipient_account_info.Account,
+            TransactionType: "TrustSet",
+            Flags: 131072, //no ripple
+            LimitAmount: {
+              currency: normalizer.getCurrencyCodeForXRPL(this.currencyCode),
+              issuer: this.issuerAccount.trim(),
+              value: this.getLimitInXRPL()
+            }
+          },
+          custom_meta: {
+            instruction: "- Set TrustLine between NFT recipient and issuer\n\n- Please sign with the RECIPIENT account!"
+          }
         }
       }
-    }
 
-    try {
       let message:any = await this.waitForTransactionSigning(genericBackendRequest);
 
       //this.infoLabel = "setTrustline " + JSON.stringify(this.recipient_account_info);
@@ -601,12 +637,17 @@ export class CreateToken implements OnInit, OnDestroy {
             currency: normalizer.getCurrencyCodeForXRPL(this.currencyCode),
             issuer: this.issuerAccount.trim(),
             value: this.getLimitInXRPL()
-          }
+          },
+          Flags: 131072
         },
         custom_meta: {
           instruction: "- Issuing " + this.limit + " " + this.currencyCode + " to: " + this.recipient_account_info.Account + "\n\n- Please sign with the ISSUER account!"
         }
       }
+    }
+
+    if(this.memoInput && this.memoInput.trim().length > 0 && !genericBackendRequest.payload.txjson.Memos) {
+      genericBackendRequest.payload.txjson.Memos = [{Memo: {MemoType: Buffer.from("NFT-Creation", 'utf8').toString('hex').toUpperCase(), MemoData: Buffer.from(this.memoInput.trim(), 'utf8').toString('hex').toUpperCase()}}];
     }
 
     try {
@@ -636,10 +677,7 @@ export class CreateToken implements OnInit, OnDestroy {
   }
 
   getLimitInXRPL(): string {
-    if(this.limit != null && this.limit < 11 && this.limit > 0)
-      return normalizer.nftTokenNumberToXrplFormat(this.limit)
-    else
-      return normalizer.nftTokenNumberToXrplFormat(0)
+    return normalizer.nftValuetoXrpl(this.limit);
   }
 
   async sendRemainingXRP() {
@@ -815,6 +853,12 @@ export class CreateToken implements OnInit, OnDestroy {
     }
   }
 
+  copyTokenLink() {
+    clipboard("https://xumm.community/tokens");
+      this.snackBar.dismiss();
+      this.snackBar.open("Token link copied to clipboard!", null, {panelClass: 'snackbar-success', duration: 3000, horizontalPosition: 'center', verticalPosition: 'bottom'});
+  }
+
   close() {
     if (typeof window.ReactNativeWebView !== 'undefined') {
       window.ReactNativeWebView.postMessage(JSON.stringify({
@@ -879,7 +923,7 @@ export class CreateToken implements OnInit, OnDestroy {
   }
 
   handleError(err) {
-    if(err && JSON.stringify(err).length > 2) {
+    if(err) {
       this.errorLabel = JSON.stringify(err);
       this.scrollToTop();
     }
