@@ -173,7 +173,7 @@
 
             <div *ngIf="currencyCode && validCurrencyCode && currencyAlreadyIssued" fxLayout="column" fxLayoutGap="0.3em" style="margin-bottom: 1.5em;">
               <mat-card class="mat-card-orange" fxLayout="column">
-                <label>Attention! You already created this currency. If you want to issue <b>more</b> of your token, please visit:</label>
+                <label>Attention! You already created this token. If you want to issue <b>more</b> of your token, please visit:</label>
                 <div fxLayout="row" fxLayoutGap="0.3em;" fxLayoutAlign="start center">
                   <label class="break-words" (click)="copyTokenLink()">https://xumm.community/tokens</label>
                   <button mat-icon-button aria-label="Copy Token Link" (click)="copyTokenLink()">

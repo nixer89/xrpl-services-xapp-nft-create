@@ -15,11 +15,11 @@ import { TypeWriter } from './utils/TypeWriter';
 import * as clipboard from 'copy-to-clipboard';
 
 @Component({
-  selector: 'createToken',
-  templateUrl: './createToken.html',
-  styleUrls: ['./createToken.css']
+  selector: 'createNft',
+  templateUrl: './createNft.html',
+  styleUrls: ['./createNft.css']
 })
-export class CreateToken implements OnInit, OnDestroy {
+export class CreateNft implements OnInit, OnDestroy {
 
   private ACCOUNT_FLAG_DEFAULT_RIPPLE:number = 8;
   private ACCOUNT_FLAG_DISABLE_MASTER_KEY:number = 4;
@@ -408,12 +408,15 @@ export class CreateToken implements OnInit, OnDestroy {
 
         } else {
           this.issuer_account_info = message_acc_info;
+          this.alreadyIssuedCurrencies = [];
         }
       } else {
         this.issuer_account_info = "no account";
+        this.alreadyIssuedCurrencies = [];
       }
     } else {
       this.issuer_account_info = "no account"
+      this.alreadyIssuedCurrencies = [];
     }
   }
 

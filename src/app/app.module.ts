@@ -6,7 +6,7 @@ import { FlexLayoutModule } from '@angular/flex-layout';
 
 //my modules
 import { FooterComponent } from './footer';
-import { CreateToken } from './createToken';
+import { CreateNft } from './createNft';
 import { AppService } from './services/app.service';
 import { XummService } from './services/xumm.service';
 import { XRPLWebsocket } from './services/xrplWebSocket';
@@ -33,7 +33,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
   declarations: [
     AppComponent,
     FooterComponent,
-    CreateToken
+    CreateNft
   ],
   imports: [
     BrowserModule,
