@@ -25,10 +25,10 @@
         <mat-card fxLayout="column" fxLayoutGap="0.5em">
             <ng-template matStepLabel>Description</ng-template>
             <label class="description">This xApp will help you to create your own nft (token) on the XRP Ledger.</label>
-            <label>A new TrustLine for your NFT will be created from the recipient account. This adds 5 XRP to the recipients account reserve.</label>
+            <label>A new TrustLine for your NFT will be created from the recipient account. This adds {{ownerReserve/1000000}} XRP to the recipients account reserve.</label>
             <mat-card class="mat-card-orange" fxLayout="column">
               <label>Also we will charge you 2.5 XRP for using this service to create your NFT and your initial issuing to one other account.</label>
-              <label>So please make sure you have at least 2.5 XRP available balance in the issuer account and 5 XRP available in the recipient account!</label>
+              <label>So please make sure you have at least 2.5 XRP available balance in the issuer account and {{ownerReserve/1000000}} XRP available in the recipient account!</label>
               <label>Once 2.5 XRP is paid, you have 24h to create your NFT. After 24h you would need to pay again.</label>
             </mat-card>
 
@@ -66,7 +66,7 @@
           <mat-checkbox [(ngModel)]="checkBoxTwoAccounts" [ngClass]="(checkBoxTwoAccounts ? 'xumm-green': 'xumm-red')">You have the keys of two accounts. One for issuing and one for receiving your NFT.</mat-checkbox>
           <mat-checkbox [(ngModel)]="checkBoxIssuerInfo" [ngClass]="(checkBoxIssuerInfo ? 'xumm-green': 'xumm-red')">It is recommended that the issuer account does NOT have outgoing trust lines! Please use an account as issuer account that you don't access/use regulary.</mat-checkbox>
           <mat-checkbox [(ngModel)]="checkBoxFiveXrp" [ngClass]="(checkBoxFiveXrp ? 'xumm-green': 'xumm-red')">You accept paying 2.5 XRP for this service.</mat-checkbox>
-          <mat-checkbox [(ngModel)]="checkBoxSufficientFunds" [ngClass]="(checkBoxSufficientFunds ? 'xumm-green': 'xumm-red')">The issuing and recipient accounts have enough funds. (At least 2.5 XRP available balance for the issuer and 5 XRP available for the recipient)</mat-checkbox>
+          <mat-checkbox [(ngModel)]="checkBoxSufficientFunds" [ngClass]="(checkBoxSufficientFunds ? 'xumm-green': 'xumm-red')">The issuing and recipient accounts have enough funds. (At least 2.5 XRP available balance for the issuer and {{ownerReserve/1000000}} XRP available for the recipient)</mat-checkbox>
           <mat-checkbox [(ngModel)]="checkBoxNetwork" [ngClass]="(checkBoxNetwork ? 'xumm-green': 'xumm-red')">Your XUMM app is connected to the {{isTestMode ? 'TEST' : 'MAIN'}} network. That is where I want to create my NFT!</mat-checkbox>
           <mat-checkbox [(ngModel)]="checkBoxNoLiability" [ngClass]="(checkBoxNoLiability ? 'xumm-green': 'xumm-red')">We take no liability if you are not able to issue your own NFT. The payment is not refundable. Only proceed if you know what you are are doing!</mat-checkbox>
           <mat-checkbox [(ngModel)]="checkBoxDisclaimer" [ngClass]="(checkBoxDisclaimer ? 'xumm-green': 'xumm-red')">If you are going to issue your NFT for commercial use, we recommend to NOT use this tool. We are not liable for any regulatory implications, depending on the jurisdiction you live in.</mat-checkbox>
@@ -134,8 +134,8 @@
               <label>This account is not activated on {{isTestMode ? 'Testnet' : 'Mainnet'}}.</label>
             </mat-card>
 
-            <mat-card *ngIf="recipient_account_info && recipient_account_info.Balance && getAvailableBalanceRecipient() < 5 && !loadingData" class="mat-card-red" fxLayout="column">
-              <label>This account does not have enough balance to create a TrustLine to your Issuer Account. At least 5 XRP should be available for the account reserve!</label>
+            <mat-card *ngIf="recipient_account_info && recipient_account_info.Balance && getAvailableBalanceRecipient() < (ownerReserve/1000000) && !loadingData" class="mat-card-red" fxLayout="column">
+              <label>This account does not have enough balance to create a TrustLine to your Issuer Account. At least {{ownerReserve/1000000}} XRP should be available for the account reserve!</label>
               <label>Current available Balance: {{getAvailableBalanceRecipient()}} XRP.</label>
             </mat-card>
 
@@ -150,7 +150,7 @@
           </div>
 
           <div style="padding-top: 0.5em;" fxLayoutGap="0.5em">
-              <button mat-raised-button color="primary" (click)="moveNext()" [disabled]="!recipient_account_info || !recipient_account_info.Account || loadingData || getAvailableBalanceRecipient() < 5 || recipient_account_info.Account == issuer_account_info.Account">Next</button>
+              <button mat-raised-button color="primary" (click)="moveNext()" [disabled]="!recipient_account_info || !recipient_account_info.Account || loadingData || getAvailableBalanceRecipient() < (ownerReserve/1000000) || recipient_account_info.Account == issuer_account_info.Account">Next</button>
               <button mat-raised-button class="xumm-grey-background" (click)="moveBack()" [disabled]="loadingData">Back</button>
           </div>
       </mat-card>
@@ -213,7 +213,7 @@
     <mat-step completed="false" editable="false">
       <mat-card fxLayout="column" fxLayoutGap="0.5em">
         <ng-template matStepLabel>Signing information</ng-template>
-        <mat-card *ngIf="recipient_account_info && recipient_account_info.Account && !loadingData && getAvailableBalanceRecipient() >= 5" class="mat-card-red" fxLayout="column" fxLayoutGap="0.3em">
+        <mat-card *ngIf="recipient_account_info && recipient_account_info.Account && !loadingData && getAvailableBalanceRecipient() >= (ownerReserve/1000000)" class="mat-card-red" fxLayout="column" fxLayoutGap="0.3em">
           <label>In the following step by step guide you will need to sign various transactions. The correct account to sign each transaction with (issuer or recipient account) is already preselected! Please DO NOT change the preselected account!</label>
           <label>If you think the preselected account is WRONG, then please CANCEL this guide and do not continue with the steps.</label>
         </mat-card>

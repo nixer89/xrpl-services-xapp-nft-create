@@ -81,6 +81,9 @@ export class CreateNft implements OnInit, OnDestroy {
 
   memoInput: string;
 
+  accountReserve:number = 10000000;
+  ownerReserve:number = 2000000;
+
   @Input()
   ottChanged: Observable<any>;
 
@@ -110,6 +113,9 @@ export class CreateNft implements OnInit, OnDestroy {
   @ViewChild('stepper') stepper: MatStepper;
 
   async ngOnInit(): Promise<void> {
+
+    this.loadFeeReserves();
+
     this.ottReceived = this.ottChanged.subscribe(async ottData => {
       //this.infoLabel = "ott received: " + JSON.stringify(ottData);
       //console.log("ottReceived: " + JSON.stringify(ottData));      
@@ -191,6 +197,21 @@ export class CreateNft implements OnInit, OnDestroy {
           this.loadingData = false;
       }
     }
+  }
+
+  async loadFeeReserves() {
+    let fee_request:any = {
+      command: "ledger_entry",
+      index: "4BC50C9B0D8515D3EAAE1E74B29A95804346C491EE1A95BF25E4AAB854A6A651",
+      ledger_index: "validated"
+    }
+
+    let feeSetting:any = await this.xrplWebSocket.getWebsocketMessage("fee-settings", fee_request, this.isTestMode);
+    this.accountReserve = feeSetting?.result?.node["ReserveBase"];
+    this.ownerReserve = feeSetting?.result?.node["ReserveIncrement"];
+
+    console.log("resolved accountReserve: " + this.accountReserve);
+    console.log("resolved ownerReserve: " + this.ownerReserve);
   }
 
   getIssuer(): string {
@@ -431,8 +452,8 @@ export class CreateNft implements OnInit, OnDestroy {
   getAvailableBalance(accountInfo: any): number {
     if(accountInfo && accountInfo.Balance) {
       let balance:number = Number(accountInfo.Balance);
-      balance = balance - (20*1000000); //deduct acc reserve
-      balance = balance - (accountInfo.OwnerCount * 5 * 1000000); //deduct owner count
+      balance = balance - this.accountReserve; //deduct acc reserve
+      balance = balance - (accountInfo.OwnerCount * this.ownerReserve); //deduct owner count
       balance = balance/1000000;
 
       if(balance >= 0.000001)
