@@ -569,7 +569,7 @@ export class CreateNft implements OnInit, OnDestroy {
   }
 
   checkChangesLimit() {
-    this.validLimit = this.limit && (/^\d{1,3}$/.test(this.limit.toString())) && this.limit > 0 && this.limit < 101;
+    this.validLimit = this.limit && (/^\d{1,6}$/.test(this.limit.toString())) && this.limit > 0 && this.limit < 12000;
   }
 
   async setTrustline() {
